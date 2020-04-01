@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include one_fm_password_management *.css
+recursive-include one_fm_password_management *.csv
+recursive-include one_fm_password_management *.html
+recursive-include one_fm_password_management *.ico
+recursive-include one_fm_password_management *.js
+recursive-include one_fm_password_management *.json
+recursive-include one_fm_password_management *.md
+recursive-include one_fm_password_management *.png
+recursive-include one_fm_password_management *.py
+recursive-include one_fm_password_management *.svg
+recursive-include one_fm_password_management *.txt
+recursive-exclude one_fm_password_management *.pyc
