@@ -47,6 +47,12 @@ class PasswordManagement(Document):
 		set_encrypted_password(self.doctype, self.name, new_password, 'password')
 		self.reload()
 
+	def get_my_password(self):
+		if check_user_exist_in_list(self):
+			return get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True)
+		else:
+			frappe.throw(_("You have no permission to view the password."))
+
 @frappe.whitelist()
 def check_password_strength(pwd):
 	# ref: https://www.codespeedy.com/check-the-password-strength-in-python/
@@ -83,3 +89,10 @@ def create_new_password():
 		return pwd
 	else:
 		create_new_password()
+
+def check_user_exist_in_list(doc):
+	if doc.user_list:
+		for user in doc.user_list:
+			if user.user == frappe.session.user:
+				return True
+	return True if (frappe.session.user == 'Administrator') else False

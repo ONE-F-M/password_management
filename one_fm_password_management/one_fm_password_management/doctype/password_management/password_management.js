@@ -14,6 +14,11 @@ frappe.ui.form.on('Password Management', {
 			frm.set_df_property('generate_strong_password', 'hidden', true);
 			frm.set_df_property('create_new_password', 'hidden', false);
 		}
+		if(check_user_exist_in_list(frm) && frm.doc.docstatus < 2){
+			frm.add_custom_button(__('Get My Password'), function() {
+				get_my_password(frm);
+			});
+		}
 	},
 	password: function(frm) {
     frappe.call({
@@ -160,4 +165,40 @@ var generate_strong_password_dialog = function(frm) {
 		}
 	});
 	d.show();
+};
+
+var get_my_password = function(frm) {
+	if(frm.doc.docstatus < 2){
+		frappe.call({
+			doc: frm.doc,
+			method: 'get_my_password',
+			callback: function(r) {
+				if(r && r.message){
+					var d = new frappe.ui.Dialog({
+						title: __("My Password"),
+						fields: [
+							{ fieldtype: 'Data', read_only: 1, fieldname: 'my_password'}
+						]
+					});
+					d.set_values({'my_password': r.message});
+					d.show();
+				}
+			}
+		});
+	}
+};
+
+var check_user_exist_in_list = function(frm) {
+	let user_exist = false;
+	if(frappe.session.user == 'Administrator'){
+		user_exist = true;
+	}
+	if(frm.doc.user_list){
+		frm.doc.user_list.forEach((user, i) => {
+			if(user.user == frappe.session.user){
+				user_exist = true;
+			}
+		});
+	}
+	return user_exist;
 };
