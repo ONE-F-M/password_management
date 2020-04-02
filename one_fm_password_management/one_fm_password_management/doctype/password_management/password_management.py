@@ -73,6 +73,7 @@ def validate_url(url):
 		return True
 	return False
 
+@frappe.whitelist()
 def create_new_password():
 	# generate a password with length "passlen" with no duplicate characters in the password
 	import random

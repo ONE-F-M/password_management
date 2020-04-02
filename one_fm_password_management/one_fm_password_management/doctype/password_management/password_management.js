@@ -6,6 +6,14 @@ frappe.ui.form.on('Password Management', {
 		if(frm.doc.docstatus == 1){
 			frm.set_df_property('password', 'read_only', true);
 		}
+		if(frm.doc.__islocal){
+			frm.set_df_property('generate_strong_password', 'hidden', false);
+			frm.set_df_property('create_new_password', 'hidden', true);
+		}
+		else{
+			frm.set_df_property('generate_strong_password', 'hidden', true);
+			frm.set_df_property('create_new_password', 'hidden', false);
+		}
 	},
 	password: function(frm) {
     frappe.call({
@@ -59,6 +67,9 @@ frappe.ui.form.on('Password Management', {
 	},
 	go_to_url: function(frm) {
 		window.location.href = frm.doc.url;
+	},
+	generate_strong_password: function(frm) {
+		generate_strong_password_dialog(frm);
 	}
 });
 
@@ -113,4 +124,40 @@ var generate_password = function(frm, d) {
 			}
 		}
 	});
+};
+
+var generate_strong_password_dialog = function(frm) {
+	var d = new frappe.ui.Dialog({
+		title: __("Generate Strong Password"),
+		fields: [
+			{ fieldtype: 'Button', fieldname: 'generate_password', label: 'Generate Password',
+				click: function() {
+					frappe.call({
+						method: 'one_fm_password_management.one_fm_password_management.doctype.password_management.password_management.create_new_password',
+						callback: function(r) {
+							if(r && r.message){
+								d.set_values({'new_password': r.message});
+							}
+							else{
+								d.set_values({'new_password': ''});
+							}
+						}
+					});
+				}
+			},
+			{ fieldtype: 'Data', reqd: 1, read_only: 1, fieldname: 'new_password', label: 'New Password'},
+			{ fieldtype: 'Check', reqd: 1, fieldname: 'make_sure_password_copied', label: 'Make sure the password is copied'},
+		],
+		primary_action_label: __("Set Password"),
+		primary_action: function() {
+			if(d.get_value('make_sure_password_copied') == 1){
+				frm.set_value('password', d.get_value('new_password'));
+				d.hide();
+			}
+			else{
+				frappe.msgprint(__("Make sure the password is copied"));
+			}
+		}
+	});
+	d.show();
 };
