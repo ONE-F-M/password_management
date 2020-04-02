@@ -56,6 +56,9 @@ frappe.ui.form.on('Password Management', {
 	},
 	create_new_password: function(frm) {
 		create_new_password_dialog(frm);
+	},
+	go_to_url: function(frm) {
+		window.location.href = frm.doc.url;
 	}
 });
 
