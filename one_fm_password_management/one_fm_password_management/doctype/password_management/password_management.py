@@ -5,14 +5,12 @@
 from __future__ import unicode_literals
 import frappe, re
 from frappe.model.document import Document
+from frappe import _
 
 class PasswordManagement(Document):
 	def validate(self):
-		if self.url:
-			if not validate_url(self.url):
-				frappe.throw(_("The Given Url is not Valid."))
-			else:
-				self.valid_url = True
+		self.set_valid_url()
+		self.validate_strong_password()
 
 	def check_my_password_strength(self):
 		if self.password:
@@ -23,6 +21,20 @@ class PasswordManagement(Document):
 		if self.url:
 			return validate_url(self.url)
 		return False
+
+	def set_valid_url(self):
+		if self.url:
+			if not validate_url(self.url):
+				frappe.throw(_("The Given Url is not Valid."))
+			else:
+				self.valid_url = True
+
+	def validate_strong_password(self):
+		if self.password:
+			strength = check_password_strength(self.password)
+			if self.ensure_strong_password and strength != "Strong":
+				frappe.throw(_("Password is not good, Include symbols, numbers, lowercase and uppercase letters in the password"))
+			self.password_strength = strength
 
 @frappe.whitelist()
 def check_password_strength(pwd):

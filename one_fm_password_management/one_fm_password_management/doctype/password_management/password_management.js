@@ -33,5 +33,20 @@ frappe.ui.form.on('Password Management', {
         }
       }
     });
+	},
+	password_category: function(frm) {
+		if(frm.doc.password_category){
+			frappe.db.get_value('Password Category', frm.doc.password_category, 'ensure_strong_password', function(r) {
+				if(r && r.ensure_strong_password){
+					frm.set_value('ensure_strong_password', r.ensure_strong_password);
+				}
+				else{
+					frm.set_value('ensure_strong_password', false);
+				}
+			})
+		}
+		else{
+			frm.set_value('ensure_strong_password', false);
+		}
 	}
 });
