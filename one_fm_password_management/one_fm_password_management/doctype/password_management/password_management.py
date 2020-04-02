@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe, re
 from frappe.model.document import Document
 from frappe import _
+from frappe.utils.password import get_decrypted_password, set_encrypted_password
 
 class PasswordManagement(Document):
 	def validate(self):
@@ -36,6 +37,16 @@ class PasswordManagement(Document):
 				frappe.throw(_("Password is not good, Include symbols, numbers, lowercase and uppercase letters in the password"))
 			self.password_strength = strength
 
+	def generate_password(self, old_password):
+		if get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True) == old_password:
+			return create_new_password()
+		else:
+			frappe.msgprint(_("Incorrect Password.!!"))
+
+	def set_new_password(self, new_password):
+		set_encrypted_password(self.doctype, self.name, new_password, 'password')
+		self.reload()
+
 @frappe.whitelist()
 def check_password_strength(pwd):
 	# ref: https://www.codespeedy.com/check-the-password-strength-in-python/
@@ -61,3 +72,13 @@ def validate_url(url):
 	if(bool(re.match(regex, url))==True):
 		return True
 	return False
+
+def create_new_password():
+	# generate a password with length "passlen" with no duplicate characters in the password
+	import random
+	str = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
+	pwd = "".join(random.sample(str, 8))
+	if check_password_strength(pwd) == "Strong":
+		return pwd
+	else:
+		create_new_password()
