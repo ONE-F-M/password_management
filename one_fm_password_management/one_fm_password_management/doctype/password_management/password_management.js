@@ -81,6 +81,22 @@ frappe.ui.form.on('Password Management', {
 	}
 });
 
+frappe.ui.form.on('Password Management User', {
+	user_list_remove: function(frm) {
+		restrict_user_add_remove(frm);
+	},
+	user_list_add: function(frm) {
+		restrict_user_add_remove(frm);
+	}
+});
+
+var restrict_user_add_remove = function(frm) {
+	if(frappe.session.user != 'Administrator'){
+		frappe.msgprint(__("Not permitted, Only Administrator can add or delete user"));
+		frm.reload_doc();
+	}
+}
+
 var create_new_password_dialog = function(frm) {
 	var d = new frappe.ui.Dialog({
 		title: __("Create New Strong Password"),
