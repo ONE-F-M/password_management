@@ -71,7 +71,10 @@ frappe.ui.form.on('Password Management', {
 		create_new_password_dialog(frm);
 	},
 	go_to_url: function(frm) {
-		window.location.href = frm.doc.url;
+		// Open in same window
+		// window.location.href = frm.doc.url;
+		// Open in new window
+		window.open(frm.doc.url);
 	},
 	generate_strong_password: function(frm) {
 		generate_strong_password_dialog(frm);
