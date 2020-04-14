@@ -98,7 +98,7 @@ frappe.ui.form.on('Password Management User', {
 });
 
 var restrict_user_add_remove = function(frm) {
-	if(frappe.session.user != 'Administrator'){
+	if(frappe.session.user != 'Administrator' && frappe.session.user != frm.doc.credentials_owner){
 		frappe.msgprint(__("Not permitted, Only Administrator can add or delete user"));
 		frm.reload_doc();
 	}
