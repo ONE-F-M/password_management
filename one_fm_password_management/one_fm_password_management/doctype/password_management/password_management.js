@@ -208,10 +208,29 @@ var get_my_password = function(frm) {
 					});
 					d.set_values({'my_password': r.message});
 					d.show();
+
+					// To copy to clipboard
+					copyToClipboard(r.message);
+
+					frappe.show_alert({
+						message: __("Password is copied to clipboard!"),
+						indicator:'green'
+					});
 				}
 			}
 		});
 	}
+};
+
+// To copy to clipboard
+var copyToClipboard = function(secretInfo) {
+	var $body = document.getElementsByTagName('body')[0];
+	var $tempInput = document.createElement('INPUT');
+	$body.appendChild($tempInput);
+	$tempInput.setAttribute('value', secretInfo)
+	$tempInput.select();
+	document.execCommand('copy');
+	$body.removeChild($tempInput);
 };
 
 var change_credential_ownership = function(frm) {
@@ -242,7 +261,7 @@ var change_credential_ownership = function(frm) {
 
 var check_user_exist_in_list = function(frm) {
 	let user_exist = false;
-	if(frappe.session.user == 'Administrator'){
+	if(frappe.session.user == 'Administrator' || frappe.session.user == frm.doc.credentials_owner){
 		user_exist = true;
 	}
 	if(frm.doc.user_list){
