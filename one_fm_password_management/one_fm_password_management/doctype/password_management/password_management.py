@@ -63,7 +63,7 @@ def check_password_strength(pwd):
 		elif(bool(re.match('((\d*)([a-z]*)([A-Z]*)([!@#$%^&*]*).{8,30})', pwd))==True):
 			return 'Good'
 	else:
-		return 'Week'
+		return 'Weak'
 
 @frappe.whitelist()
 def validate_url(url):

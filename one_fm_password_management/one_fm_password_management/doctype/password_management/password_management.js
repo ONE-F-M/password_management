@@ -30,7 +30,7 @@ frappe.ui.form.on('Password Management', {
     });
 	},
   password_strength: function(frm) {
-    let strength_list = {'Week': 'red', 'Good': 'orange', 'Strong': 'green'};
+    let strength_list = {'Weak': 'red', 'Good': 'orange', 'Strong': 'green'};
     let description = '';
     if(frm.doc.password_strength){
       description = '<font color="'+strength_list[frm.doc.password_strength]+'">'+__(frm.doc.password_strength)+'</font>';
