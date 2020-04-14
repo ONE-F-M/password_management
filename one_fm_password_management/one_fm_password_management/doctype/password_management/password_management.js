@@ -6,6 +6,7 @@ frappe.ui.form.on('Password Management', {
 		if(frm.doc.docstatus == 1){
 			frm.set_df_property('password', 'read_only', true);
 		}
+		frm.set_df_property('change_ownership', 'hidden', true);
 		if(frm.doc.__islocal){
 			frm.set_df_property('generate_strong_password', 'hidden', false);
 			frm.set_df_property('create_new_password', 'hidden', true);
@@ -18,6 +19,9 @@ frappe.ui.form.on('Password Management', {
 			frm.add_custom_button(__('Get My Password'), function() {
 				get_my_password(frm);
 			});
+		}
+		if(frappe.session.user == 'Administrator' || frm.doc.credentials_owner == frappe.session.user){
+			frm.set_df_property('change_ownership', 'hidden', false);
 		}
 	},
 	password: function(frm) {
@@ -78,6 +82,9 @@ frappe.ui.form.on('Password Management', {
 	},
 	generate_strong_password: function(frm) {
 		generate_strong_password_dialog(frm);
+	},
+	change_ownership: function(frm) {
+		change_credential_ownership(frm);
 	}
 });
 
@@ -206,6 +213,32 @@ var get_my_password = function(frm) {
 		});
 	}
 };
+
+var change_credential_ownership = function(frm) {
+	if(frm.doc.credentials_owner){
+		var d = new frappe.ui.Dialog({
+			title: __("Change Ownership"),
+			fields: [
+				{ label: 'New Credentials Owner', fieldtype: 'Link', reqd: 1, fieldname: 'new_owner', options: 'User'}
+			],
+			primary_action_label: __("Change"),
+			primary_action: function() {
+				frappe.confirm(__('Permanently Change the Credentials Owner?'),
+					function() {
+						frm.set_value('credentials_owner', d.get_value('new_owner'));
+						frm.save();
+						d.hide();
+					},
+					function() {
+						d.hide();
+					}
+				);
+			}
+		});
+		d.set_values({'new_owner': frm.doc.credentials_owner});
+		d.show();
+	}
+}
 
 var check_user_exist_in_list = function(frm) {
 	let user_exist = false;

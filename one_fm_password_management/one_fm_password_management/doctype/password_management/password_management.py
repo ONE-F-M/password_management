@@ -12,6 +12,7 @@ class PasswordManagement(Document):
 	def validate(self):
 		self.set_valid_url()
 		self.validate_strong_password()
+		self.set_credentials_owner()
 
 	def check_my_password_strength(self):
 		if self.password:
@@ -29,6 +30,10 @@ class PasswordManagement(Document):
 				frappe.throw(_("The Given Url is not Valid."))
 			else:
 				self.valid_url = True
+
+	def set_credentials_owner(self):
+		if not self.credentials_owner:
+			self.credentials_owner = self.owner
 
 	def validate_strong_password(self):
 		if self.password:
