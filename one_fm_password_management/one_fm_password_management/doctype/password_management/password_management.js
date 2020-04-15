@@ -3,9 +3,6 @@
 
 frappe.ui.form.on('Password Management', {
 	refresh: function(frm) {
-		if(frm.doc.docstatus == 1){
-			frm.set_df_property('password', 'read_only', true);
-		}
 		frm.set_df_property('change_ownership', 'hidden', true);
 		if(frm.doc.__islocal){
 			frm.set_df_property('generate_strong_password', 'hidden', false);
@@ -13,15 +10,23 @@ frappe.ui.form.on('Password Management', {
 		}
 		else{
 			frm.set_df_property('generate_strong_password', 'hidden', true);
-			frm.set_df_property('create_new_password', 'hidden', false);
-		}
-		if(check_user_exist_in_list(frm) && frm.doc.docstatus < 2){
-			frm.add_custom_button(__('Get My Password'), function() {
-				get_my_password(frm);
-			});
-		}
-		if(frappe.session.user == 'Administrator' || frm.doc.credentials_owner == frappe.session.user){
-			frm.set_df_property('change_ownership', 'hidden', false);
+			frm.set_df_property('password', 'read_only', true);
+			if(frappe.session.user == 'Administrator' || frm.doc.credentials_owner == frappe.session.user){
+				frm.set_df_property('change_ownership', 'hidden', false);
+			}
+			else{
+				set_fields_read_only(frm);
+			}
+			if(check_user_exist_in_list(frm) && frm.doc.docstatus < 2){
+				frm.add_custom_button(__('Get My Password'), function() {
+					get_my_password(frm);
+				});
+				frm.set_df_property('create_new_password', 'hidden', false);
+			}
+			else{
+				frm.set_df_property('username', 'hidden', true);
+				frm.set_df_property('create_new_password', 'hidden', true);
+			}
 		}
 	},
 	password: function(frm) {
@@ -96,6 +101,13 @@ frappe.ui.form.on('Password Management User', {
 		restrict_user_add_remove(frm);
 	}
 });
+
+var set_fields_read_only = function(frm) {
+	var fields_list = frappe.meta.docfield_list[frm.doc.doctype];
+	for(var i=0; i<fields_list.length; i++){
+		frm.set_df_property(fields_list[i].fieldname, "read_only", true);
+	}
+};
 
 var restrict_user_add_remove = function(frm) {
 	if(frappe.session.user != 'Administrator' && frappe.session.user != frm.doc.credentials_owner){
