@@ -100,4 +100,4 @@ def check_user_exist_in_list(doc):
 		for user in doc.user_list:
 			if user.user == frappe.session.user:
 				return True
-	return True if (frappe.session.user == 'Administrator') else False
+	return True if (frappe.session.user in ['Administrator', doc.credentials_owner]) else False
