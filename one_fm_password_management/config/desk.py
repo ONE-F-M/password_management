@@ -11,7 +11,8 @@ def get_data():
 					"type": "doctype",
 					"name": "Password Management",
 					"label": _("Password Management"),
-					"description": _("Password Management")
+					"description": _("Password Management"),
+					"onboard": 1,
 				}
 			]
 		}
