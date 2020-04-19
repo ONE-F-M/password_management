@@ -5,16 +5,22 @@ def get_data():
 	return [
 		{
 			"label": _("Tools"),
-			"items": [
+			"icon": "fa fa-star",
+            "items": [
 				{
+					"color": "grey",
+					"icon": "octicon octicon-key",
 					"type": "doctype",
 					"name": "Password Management",
-					"onboard": 1,
-				},{
+					"label": _("Password Management")
+				},
+				{
+					"color": "grey",
+					"icon": "octicon octicon-key",
 					"type": "doctype",
 					"name": "Password Category",
-					"onboard": 1,
-				},
-			]
+					"label": _("Password Category")
+				}
+            ]
 		}
 	]
