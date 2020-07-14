@@ -150,6 +150,8 @@ var create_new_password_dialog = function(frm) {
 			}
 		}
 	});
+	// disable dialog action initially
+	d.get_primary_btn().attr('disabled', true);
 	d.show();
 };
 
@@ -161,9 +163,11 @@ var generate_password = function(frm, d) {
 		callback: function(r) {
 			if(r && r.message){
 				d.set_values({'new_password': r.message});
+				d.get_primary_btn().attr('disabled', false);
 			}
 			else{
 				d.set_values({'new_password': ''});
+				d.get_primary_btn().attr('disabled', true);
 			}
 		}
 	});

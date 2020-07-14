@@ -46,7 +46,7 @@ class PasswordManagement(Document):
 		if get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True) == old_password:
 			return create_new_password()
 		else:
-			frappe.msgprint(_("Incorrect Password.!!"))
+			frappe.msgprint(_("Please fill correct Password to Generate New Password.!!"))
 
 	def set_new_password(self, new_password):
 		set_encrypted_password(self.doctype, self.name, new_password, 'password')
@@ -86,14 +86,12 @@ def validate_url(url):
 
 @frappe.whitelist()
 def create_new_password():
-	# generate a password with length "passlen" with no duplicate characters in the password
 	import random
 	str = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
 	pwd = "".join(random.sample(str, 8))
-	if check_password_strength(pwd) == "Strong":
-		return pwd
-	else:
-		create_new_password()
+	while check_password_strength(pwd) != "Strong":
+		pwd = "".join(random.sample(str, 8))
+	return pwd
 
 def check_user_exist_in_list(doc):
 	if doc.user_list:
