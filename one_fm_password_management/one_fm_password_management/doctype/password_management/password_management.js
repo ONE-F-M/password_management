@@ -77,7 +77,7 @@ frappe.ui.form.on('Password Management', {
 		}
 	},
 	create_new_password: function(frm) {
-		create_new_password_dialog(frm);
+		create_new_password_dialog(frm, false)
 	},
 	go_to_url: function(frm) {
 		// Open in same window
@@ -86,7 +86,7 @@ frappe.ui.form.on('Password Management', {
 		window.open(frm.doc.url);
 	},
 	generate_strong_password: function(frm) {
-		generate_strong_password_dialog(frm);
+		create_new_password_dialog(frm, true);
 	},
 	change_ownership: function(frm) {
 		change_credential_ownership(frm);
@@ -116,58 +116,70 @@ var restrict_user_add_remove = function(frm) {
 	}
 }
 
-var create_new_password_dialog = function(frm) {
+var create_new_password_dialog = function(frm, is_new) {
+	var common_fields = [
+		{ fieldtype: 'Button', fieldname: 'generate_password', label: 'Generate Strong Password',
+			click: function() {
+				generate_password(frm, d);
+			}
+		},
+		{ fieldtype: 'Data', reqd: 1, fieldname: 'new_password', label: 'New Password'},
+		{ fieldtype: 'Check', reqd: 1, fieldname: 'make_sure_password_copied', label: 'Make sure the password is copied'}
+	];
+	var fields = [];
+	var primary_action_label = 'Set Password';
+	if(!is_new){
+		fields = [{ fieldtype: 'Password', reqd: 1, fieldname: 'password', label: 'Password'}];
+		primary_action_label = 'Update Password';
+	}
+	fields = fields.concat(common_fields)
 	var d = new frappe.ui.Dialog({
-		title: __("Create New Strong Password"),
-		fields: [
-			{ fieldtype: 'Password', reqd: 1, fieldname: 'password', label: 'Password'},
-			{ fieldtype: 'Button', fieldname: 'generate_password', label: 'Generate Password',
-				click: function() {
-					generate_password(frm, d);
-				}
-			},
-			{ fieldtype: 'Data', reqd: 1, read_only: 1, fieldname: 'new_password', label: 'New Password'},
-			{ fieldtype: 'Check', reqd: 1, fieldname: 'make_sure_password_copied', label: 'Make sure the password is copied'},
-		],
-		primary_action_label: __("Update Password"),
+		title: __("Create Strong Password"),
+		fields: fields,
+		primary_action_label: __(primary_action_label),
 		primary_action: function() {
 			if(d.get_value('make_sure_password_copied') == 1){
-				frappe.call({
-					doc: frm.doc,
-					method: 'set_new_password',
-					args: {'new_password': d.get_value('new_password')},
-					callback: function(r) {
-						if(!r.exc){
-							d.hide();
-						}
-					},
-					freeze: true,
-					freeze_message: __("Updating Password......")
-				});
+				set_new_password(frm, d, is_new);
 			}
 			else{
 				frappe.msgprint(__("Make sure the password is copied"));
 			}
 		}
 	});
-	// disable dialog action initially
-	d.get_primary_btn().attr('disabled', true);
 	d.show();
 };
+
+var set_new_password = function(frm, d, is_new){
+	if(is_new){
+		frm.set_value('password', d.get_value('new_password'));
+		d.hide();
+	}
+	else{
+		frappe.call({
+			doc: frm.doc,
+			method: 'set_new_password',
+			args: {'old_password': d.get_value('password'), 'new_password': d.get_value('new_password')},
+			callback: function(r) {
+				if(r.message){
+					d.hide();
+				}
+			},
+			freeze: true,
+			freeze_message: __("Updating Password......")
+		});
+	}
+}
 
 var generate_password = function(frm, d) {
 	frappe.call({
 		doc: frm.doc,
 		method: 'generate_password',
-		args: {'old_password': d.get_value('password')},
 		callback: function(r) {
 			if(r && r.message){
 				d.set_values({'new_password': r.message});
-				d.get_primary_btn().attr('disabled', false);
 			}
 			else{
 				d.set_values({'new_password': ''});
-				d.get_primary_btn().attr('disabled', true);
 			}
 		}
 	});
@@ -179,17 +191,7 @@ var generate_strong_password_dialog = function(frm) {
 		fields: [
 			{ fieldtype: 'Button', fieldname: 'generate_password', label: 'Generate Password',
 				click: function() {
-					frappe.call({
-						method: 'one_fm_password_management.one_fm_password_management.doctype.password_management.password_management.create_new_password',
-						callback: function(r) {
-							if(r && r.message){
-								d.set_values({'new_password': r.message});
-							}
-							else{
-								d.set_values({'new_password': ''});
-							}
-						}
-					});
+					generate_password(frm, d);
 				}
 			},
 			{ fieldtype: 'Data', reqd: 1, read_only: 1, fieldname: 'new_password', label: 'New Password'},

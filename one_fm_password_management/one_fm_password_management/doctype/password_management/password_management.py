@@ -42,15 +42,17 @@ class PasswordManagement(Document):
 				frappe.throw(_("Password is not good, Include symbols, numbers, lowercase and uppercase letters in the password"))
 			self.password_strength = strength
 
-	def generate_password(self, old_password):
-		if get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True) == old_password:
-			return create_new_password()
-		else:
-			frappe.msgprint(_("Please fill correct Password to Generate New Password.!!"))
+	def generate_password(self):
+		return create_new_password()
 
-	def set_new_password(self, new_password):
-		set_encrypted_password(self.doctype, self.name, new_password, 'password')
-		self.reload()
+	def set_new_password(self, old_password, new_password):
+		if get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True) == old_password:
+			set_encrypted_password(self.doctype, self.name, new_password, 'password')
+			self.reload()
+			return True
+		else:
+			frappe.msgprint(_("Old Password is not valid, please fill correct Old Password to Set New Password.!!"))
+			return False
 
 	def get_my_password(self):
 		if check_user_exist_in_list(self):
