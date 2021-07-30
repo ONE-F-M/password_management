@@ -54,6 +54,7 @@ class PasswordManagement(Document):
 			frappe.msgprint(_("Old Password is not valid, please fill correct Old Password to Set New Password.!!"))
 			return False
 
+	@frappe.whitelist()
 	def get_my_password(self):
 		if check_user_exist_in_list(self):
 			return get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True)
