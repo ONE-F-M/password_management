@@ -14,11 +14,13 @@ class PasswordManagement(Document):
 		self.validate_strong_password()
 		self.set_credentials_owner()
 
+	@frappe.whitelist()
 	def check_my_password_strength(self):
 		if self.password:
 			return check_password_strength(self.password)
 		return False
 
+	@frappe.whitelist()
 	def validate_my_url(self):
 		if self.url:
 			return validate_url(self.url)
@@ -42,9 +44,11 @@ class PasswordManagement(Document):
 				frappe.throw(_("Password is not good, Include symbols, numbers, lowercase and uppercase letters in the password"))
 			self.password_strength = strength
 
+	@frappe.whitelist()
 	def generate_password(self):
 		return create_new_password()
 
+	@frappe.whitelist()
 	def set_new_password(self, old_password, new_password):
 		if get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True) == old_password:
 			set_encrypted_password(self.doctype, self.name, new_password, 'password')
