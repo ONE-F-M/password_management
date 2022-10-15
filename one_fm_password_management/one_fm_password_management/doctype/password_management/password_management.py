@@ -17,7 +17,7 @@ class PasswordManagement(Document):
 	@frappe.whitelist()
 	def check_my_password_strength(self):
 		if self.password:
-			return check_password_strength(self.password)
+			return get_password_strength(self.password)
 		return False
 
 	@frappe.whitelist()
@@ -38,11 +38,13 @@ class PasswordManagement(Document):
 			self.credentials_owner = self.owner
 
 	def validate_strong_password(self):
-		if self.password:
-			strength = check_password_strength(self.password)
-			if self.ensure_strong_password and strength != "Strong":
+		if self.password and self.ensure_strong_password:
+			my_password = self.password
+			if not self.is_new():
+				my_password = get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True)
+			self.password_strength = get_password_strength(my_password)
+			if self.ensure_strong_password and self.password_strength != "Strong":
 				frappe.throw(_("Password is not good, Include symbols, numbers, lowercase and uppercase letters in the password"))
-			self.password_strength = strength
 
 	@frappe.whitelist()
 	def generate_password(self):
@@ -51,6 +53,8 @@ class PasswordManagement(Document):
 	@frappe.whitelist()
 	def set_new_password(self, old_password, new_password):
 		if get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True) == old_password:
+			if self.ensure_strong_password and get_password_strength(new_password) != "Strong":
+				frappe.throw(_("Password is not good, Include symbols, numbers, lowercase and uppercase letters in the password"))
 			set_encrypted_password(self.doctype, self.name, new_password, 'password')
 			self.reload()
 			return True
@@ -66,7 +70,7 @@ class PasswordManagement(Document):
 			frappe.throw(_("You have no permission to view the password."))
 
 @frappe.whitelist()
-def check_password_strength(pwd):
+def get_password_strength(pwd):
 	# ref: https://www.codespeedy.com/check-the-password-strength-in-python/
 	if(len(pwd)>=8):
 		# must contain one digit similarly we say that for lowercase, uppercase and special characters
@@ -96,7 +100,7 @@ def create_new_password():
 	import random
 	str = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
 	pwd = "".join(random.sample(str, 8))
-	while check_password_strength(pwd) != "Strong":
+	while get_password_strength(pwd) != "Strong":
 		pwd = "".join(random.sample(str, 8))
 	return pwd
 
