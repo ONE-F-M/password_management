@@ -51,12 +51,14 @@ frappe.ui.form.on('Password Management', {
       doc: frm.doc,
       method: 'validate_my_url',
       callback: function(r) {
-        if(r.message){
+				let description = '';
+				if(r.message){
           frm.set_value("valid_url", true);
+					frm.set_df_property('url', 'description', '<font color="green">Valid Url(Example: https://example_domain.com)</font>');
         }
         if(!r.message && frm.doc.url){
           frm.set_value("valid_url", false);
-          frappe.throw(__("The Given Url is not Valid."));
+					frm.set_df_property('url', 'description', '<font color="red">Not Valid Url(Example: https://example_domain.com)</font>');
         }
       }
     });

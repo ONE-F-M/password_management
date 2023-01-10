@@ -10,7 +10,7 @@ from frappe.utils.password import get_decrypted_password, set_encrypted_password
 
 class PasswordManagement(Document):
 	def validate(self):
-		self.set_valid_url()
+		self.validate_my_url(True)
 		self.validate_strong_password()
 		self.set_credentials_owner()
 
@@ -21,17 +21,10 @@ class PasswordManagement(Document):
 		return False
 
 	@frappe.whitelist()
-	def validate_my_url(self):
+	def validate_my_url(self, throw=False):
 		if self.url:
-			return validate_url(self.url)
-		return False
-
-	def set_valid_url(self):
-		if self.url:
-			if not validate_url(self.url):
-				frappe.throw(_("The Given Url is not Valid."))
-			else:
-				self.valid_url = True
+			valid_url_schemes = ("http", "https")
+			return frappe.utils.validate_url(self.url, throw=throw, valid_schemes=valid_url_schemes)
 
 	def set_credentials_owner(self):
 		if not self.credentials_owner:
