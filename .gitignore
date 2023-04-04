@@ -4,3 +4,4 @@
 *.swp
 tags
 one_fm_password_management/docs/current
+/__pycache/
