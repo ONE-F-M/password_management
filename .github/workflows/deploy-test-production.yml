@@ -26,7 +26,7 @@ jobs:
             git pull upstream test-production
             cd /home/frappe/test-production
             bench setup requirements one_fm_password_management
-            bench migrate --skip-failing
+            bench migrate
             bench build --app one_fm_password_management
             bench clear-cache
             bench restart
