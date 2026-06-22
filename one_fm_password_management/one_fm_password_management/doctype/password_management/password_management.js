@@ -1,89 +1,88 @@
 // Copyright (c) 2020, ONE FM and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Password Management', {
+frappe.ui.form.on("Password Management", {
 	refresh: function(frm) {
-		frm.set_df_property('change_ownership', 'hidden', true);
+		frm.set_df_property("change_ownership", "hidden", true);
 		if(frm.doc.__islocal){
-			frm.set_df_property('generate_strong_password', 'hidden', false);
-			frm.set_df_property('create_new_password', 'hidden', true);
+			frm.set_df_property("generate_strong_password", "hidden", false);
+			frm.set_df_property("create_new_password", "hidden", true);
 		}
 		else{
-			frm.set_df_property('generate_strong_password', 'hidden', true);
-			frm.set_df_property('password', 'read_only', true);
-			if(frappe.session.user == 'Administrator' || frm.doc.credentials_owner == frappe.session.user){
-				frm.set_df_property('change_ownership', 'hidden', false);
+			frm.set_df_property("generate_strong_password", "hidden", true);
+			frm.set_df_property("password", "read_only", true);
+			if(frappe.session.user == "Administrator" || frm.doc.credentials_owner == frappe.session.user){
+				frm.set_df_property("change_ownership", "hidden", false);
 			}
 			else{
 				set_fields_read_only(frm);
 			}
 			if(check_user_exist_in_list(frm) && frm.doc.docstatus < 2){
-				frm.add_custom_button(__('Get My Password'), function() {
+				frm.add_custom_button(__("Get My Password"), function() {
 					get_my_password(frm);
 				});
-				frm.set_df_property('create_new_password', 'hidden', false);
+				frm.set_df_property("create_new_password", "hidden", false);
 			}
 			else{
-				frm.set_df_property('username', 'hidden', true);
-				frm.set_df_property('create_new_password', 'hidden', true);
+				frm.set_df_property("username", "hidden", true);
+				frm.set_df_property("create_new_password", "hidden", true);
 			}
 		}
 	},
 	password: function(frm) {
-    frappe.call({
-      doc: frm.doc,
-      method: 'check_my_password_strength',
-      callback: function(r) {
-        frm.set_value('password_strength', r.message?r.message:'');
-      }
-    });
+		frappe.call({
+			doc: frm.doc,
+			method: "check_my_password_strength",
+			callback: function(r) {
+				frm.set_value("password_strength", r.message ? r.message : "");
+			}
+		});
 	},
-  password_strength: function(frm) {
-    let strength_list = {'Weak': 'red', 'Good': 'orange', 'Strong': 'green'};
-    let description = '';
-    if(frm.doc.password_strength){
-      description = '<font color="'+strength_list[frm.doc.password_strength]+'">'+__(frm.doc.password_strength)+'</font>';
-    }
-    frm.set_df_property('password', 'description', description);
-  },
-  url: function(frm) {
-    frappe.call({
-      doc: frm.doc,
-      method: 'validate_my_url',
-      callback: function(r) {
-				let description = '';
+	password_strength: function(frm) {
+		let strength_list = {"Weak": "red", "Good": "orange", "Strong": "green"};
+		let description = "";
+		if(frm.doc.password_strength){
+			let color = strength_list[frm.doc.password_strength];
+			description = `<span class="text-${color === 'orange' ? 'warning' : color}">${__(frm.doc.password_strength)}</span>`;
+		}
+		frm.set_df_property("password", "description", description);
+	},
+	url: function(frm) {
+		frappe.call({
+			doc: frm.doc,
+			method: "validate_my_url",
+			callback: function(r) {
+				let description = "";
 				if(r.message){
-          frm.set_value("valid_url", true);
-					frm.set_df_property('url', 'description', '<font color="green">Valid Url(Example: https://example_domain.com)</font>');
-        }
-        if(!r.message && frm.doc.url){
-          frm.set_value("valid_url", false);
-					frm.set_df_property('url', 'description', '<font color="red">Not Valid Url(Example: https://example_domain.com)</font>');
-        }
-      }
-    });
+					frm.set_value("valid_url", true);
+					frm.set_df_property("url", "description", '<span class="text-success">' + __("Valid Url (Example: https://example_domain.com)") + "</span>");
+				}
+				if(!r.message && frm.doc.url){
+					frm.set_value("valid_url", false);
+					frm.set_df_property("url", "description", '<span class="text-danger">' + __("Not Valid Url (Example: https://example_domain.com)") + "</span>");
+				}
+			}
+		});
 	},
 	password_category: function(frm) {
 		if(frm.doc.password_category){
-			frappe.db.get_value('Password Category', frm.doc.password_category, 'ensure_strong_password', function(r) {
+			frappe.db.get_value("Password Category", frm.doc.password_category, "ensure_strong_password", function(r) {
 				if(r && r.ensure_strong_password){
-					frm.set_value('ensure_strong_password', r.ensure_strong_password);
+					frm.set_value("ensure_strong_password", r.ensure_strong_password);
 				}
 				else{
-					frm.set_value('ensure_strong_password', false);
+					frm.set_value("ensure_strong_password", false);
 				}
-			})
+			});
 		}
 		else{
-			frm.set_value('ensure_strong_password', false);
+			frm.set_value("ensure_strong_password", false);
 		}
 	},
 	create_new_password: function(frm) {
-		create_new_password_dialog(frm, false)
+		create_new_password_dialog(frm, false);
 	},
 	go_to_url: function(frm) {
-		// Open in same window
-		// window.location.href = frm.doc.url;
 		// Open in new window
 		window.open(frm.doc.url);
 	},
@@ -95,7 +94,7 @@ frappe.ui.form.on('Password Management', {
 	}
 });
 
-frappe.ui.form.on('Password Management User', {
+frappe.ui.form.on("Password Management User", {
 	user_list_remove: function(frm) {
 		restrict_user_add_remove(frm);
 	},
@@ -105,42 +104,43 @@ frappe.ui.form.on('Password Management User', {
 });
 
 var set_fields_read_only = function(frm) {
-	var fields_list = frappe.meta.docfield_list[frm.doc.doctype];
-	for(var i=0; i<fields_list.length; i++){
-		frm.set_df_property(fields_list[i].fieldname, "read_only", true);
+	// Use frappe.get_meta() instead of deprecated frappe.meta.docfield_list
+	let fields = frappe.get_meta(frm.doc.doctype).fields;
+	for(let i = 0; i < fields.length; i++){
+		frm.set_df_property(fields[i].fieldname, "read_only", true);
 	}
 };
 
 var restrict_user_add_remove = function(frm) {
-	if(frappe.session.user != 'Administrator' && frappe.session.user != frm.doc.credentials_owner){
+	if(frappe.session.user != "Administrator" && frappe.session.user != frm.doc.credentials_owner){
 		frappe.msgprint(__("Not permitted, Only Administrator can add or delete user"));
 		frm.reload_doc();
 	}
-}
+};
 
 var create_new_password_dialog = function(frm, is_new) {
 	var common_fields = [
-		{ fieldtype: 'Button', fieldname: 'generate_password', label: 'Generate Strong Password',
+		{ fieldtype: "Button", fieldname: "generate_password", label: "Generate Strong Password",
 			click: function() {
 				generate_password(frm, d);
 			}
 		},
-		{ fieldtype: 'Data', reqd: 1, fieldname: 'new_password', label: 'New Password', length: 500 },
-		{ fieldtype: 'Check', reqd: 1, fieldname: 'make_sure_password_copied', label: 'Make sure the password is copied'}
+		{ fieldtype: "Data", reqd: 1, fieldname: "new_password", label: "New Password", length: 500 },
+		{ fieldtype: "Check", reqd: 1, fieldname: "make_sure_password_copied", label: "Make sure the password is copied"}
 	];
 	var fields = [];
-	var primary_action_label = 'Set Password';
+	var primary_action_label = "Set Password";
 	if(!is_new){
-		fields = [{ fieldtype: 'Password', reqd: 1, fieldname: 'password', label: 'Password', length: 500 }];
-		primary_action_label = 'Update Password';
+		fields = [{ fieldtype: "Password", reqd: 1, fieldname: "password", label: "Password", length: 500 }];
+		primary_action_label = "Update Password";
 	}
-	fields = fields.concat(common_fields)
+	fields = fields.concat(common_fields);
 	var d = new frappe.ui.Dialog({
 		title: __("Create Strong Password"),
 		fields: fields,
 		primary_action_label: __(primary_action_label),
 		primary_action: function() {
-			if(d.get_value('make_sure_password_copied') == 1){
+			if(d.get_value("make_sure_password_copied") == 1){
 				set_new_password(frm, d, is_new);
 			}
 			else{
@@ -153,14 +153,14 @@ var create_new_password_dialog = function(frm, is_new) {
 
 var set_new_password = function(frm, d, is_new){
 	if(is_new){
-		frm.set_value('password', d.get_value('new_password'));
+		frm.set_value("password", d.get_value("new_password"));
 		d.hide();
 	}
 	else{
 		frappe.call({
 			doc: frm.doc,
-			method: 'set_new_password',
-			args: {'old_password': d.get_value('password'), 'new_password': d.get_value('new_password')},
+			method: "set_new_password",
+			args: {"old_password": d.get_value("password"), "new_password": d.get_value("new_password")},
 			callback: function(r) {
 				if(r.message){
 					d.hide();
@@ -170,18 +170,18 @@ var set_new_password = function(frm, d, is_new){
 			freeze_message: __("Updating Password......")
 		});
 	}
-}
+};
 
 var generate_password = function(frm, d) {
 	frappe.call({
 		doc: frm.doc,
-		method: 'generate_password',
+		method: "generate_password",
 		callback: function(r) {
 			if(r && r.message){
-				d.set_values({'new_password': r.message});
+				d.set_values({"new_password": r.message});
 			}
 			else{
-				d.set_values({'new_password': ''});
+				d.set_values({"new_password": ""});
 			}
 		}
 	});
@@ -191,18 +191,18 @@ var generate_strong_password_dialog = function(frm) {
 	var d = new frappe.ui.Dialog({
 		title: __("Generate Strong Password"),
 		fields: [
-			{ fieldtype: 'Button', fieldname: 'generate_password', label: 'Generate Password',
+			{ fieldtype: "Button", fieldname: "generate_password", label: "Generate Password",
 				click: function() {
 					generate_password(frm, d);
 				}
 			},
-			{ fieldtype: 'Data', reqd: 1, read_only: 1, fieldname: 'new_password', label: 'New Password'},
-			{ fieldtype: 'Check', reqd: 1, fieldname: 'make_sure_password_copied', label: 'Make sure the password is copied'},
+			{ fieldtype: "Data", reqd: 1, read_only: 1, fieldname: "new_password", label: "New Password"},
+			{ fieldtype: "Check", reqd: 1, fieldname: "make_sure_password_copied", label: "Make sure the password is copied"},
 		],
 		primary_action_label: __("Set Password"),
 		primary_action: function() {
-			if(d.get_value('make_sure_password_copied') == 1){
-				frm.set_value('password', d.get_value('new_password'));
+			if(d.get_value("make_sure_password_copied") == 1){
+				frm.set_value("password", d.get_value("new_password"));
 				d.hide();
 			}
 			else{
@@ -217,24 +217,24 @@ var get_my_password = function(frm) {
 	if(frm.doc.docstatus < 2){
 		frappe.call({
 			doc: frm.doc,
-			method: 'get_my_password',
+			method: "get_my_password",
 			callback: function(r) {
 				if(r && r.message){
 					var d = new frappe.ui.Dialog({
 						title: __("My Password"),
 						fields: [
-							{ fieldtype: 'Data', read_only: 1, fieldname: 'my_password'}
+							{ fieldtype: "Data", read_only: 1, fieldname: "my_password"}
 						]
 					});
-					d.set_values({'my_password': r.message});
+					d.set_values({"my_password": r.message});
 					d.show();
 
-					// To copy to clipboard
+					// Copy to clipboard using modern API
 					copyToClipboard(r.message);
 
 					frappe.show_alert({
 						message: __("Password is copied to clipboard!"),
-						indicator:'green'
+						indicator: "green"
 					});
 				}
 			}
@@ -242,15 +242,32 @@ var get_my_password = function(frm) {
 	}
 };
 
-// To copy to clipboard
+// Copy to clipboard using modern Clipboard API
 var copyToClipboard = function(secretInfo) {
-	var $body = document.getElementsByTagName('body')[0];
-	var $tempInput = document.createElement('INPUT');
-	$body.appendChild($tempInput);
-	$tempInput.setAttribute('value', secretInfo)
+	if (navigator.clipboard && navigator.clipboard.writeText) {
+		navigator.clipboard.writeText(secretInfo).catch(function() {
+			// Fallback for older browsers or insecure contexts
+			copyToClipboardFallback(secretInfo);
+		});
+	} else {
+		copyToClipboardFallback(secretInfo);
+	}
+};
+
+// Fallback for browsers that don't support Clipboard API
+var copyToClipboardFallback = function(secretInfo) {
+	var $tempInput = document.createElement("textarea");
+	$tempInput.value = secretInfo;
+	$tempInput.style.position = "fixed";
+	$tempInput.style.left = "-9999px";
+	document.body.appendChild($tempInput);
 	$tempInput.select();
-	document.execCommand('copy');
-	$body.removeChild($tempInput);
+	try {
+		document.execCommand("copy");
+	} catch (e) {
+		// Silent fallback
+	}
+	document.body.removeChild($tempInput);
 };
 
 var change_credential_ownership = function(frm) {
@@ -258,13 +275,13 @@ var change_credential_ownership = function(frm) {
 		var d = new frappe.ui.Dialog({
 			title: __("Change Ownership"),
 			fields: [
-				{ label: 'New Credentials Owner', fieldtype: 'Link', reqd: 1, fieldname: 'new_owner', options: 'User'}
+				{ label: "New Credentials Owner", fieldtype: "Link", reqd: 1, fieldname: "new_owner", options: "User"}
 			],
 			primary_action_label: __("Change"),
 			primary_action: function() {
-				frappe.confirm(__('Permanently Change the Credentials Owner?'),
+				frappe.confirm(__("Permanently Change the Credentials Owner?"),
 					function() {
-						frm.set_value('credentials_owner', d.get_value('new_owner'));
+						frm.set_value("credentials_owner", d.get_value("new_owner"));
 						frm.save();
 						d.hide();
 					},
@@ -274,14 +291,14 @@ var change_credential_ownership = function(frm) {
 				);
 			}
 		});
-		d.set_values({'new_owner': frm.doc.credentials_owner});
+		d.set_values({"new_owner": frm.doc.credentials_owner});
 		d.show();
 	}
-}
+};
 
 var check_user_exist_in_list = function(frm) {
 	let user_exist = false;
-	if(frappe.session.user == 'Administrator' || frappe.session.user == frm.doc.credentials_owner){
+	if(frappe.session.user == "Administrator" || frappe.session.user == frm.doc.credentials_owner){
 		user_exist = true;
 	}
 	if(frm.doc.user_list){

@@ -1,13 +1,7 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from . import __version__ as app_version
-
 app_name = "one_fm_password_management"
 app_title = "One Fm Password Management"
 app_publisher = "ONE FM"
 app_description = "Password Management"
-app_icon = "octicon octicon-file-directory"
-app_color = "grey"
 app_email = "develop@one-fm.com"
 app_license = "MIT"
 
@@ -41,15 +35,6 @@ app_license = "MIT"
 # role_home_page = {
 #	"Role": "home_page"
 # }
-
-# Website user home page (by function)
-# get_website_user_home_page = "one_fm_password_management.utils.get_home_page"
-
-# Generators
-# ----------
-
-# automatically create page for each record of this doctype
-# website_generators = ["Web Page"]
 
 # Installation
 # ------------
@@ -102,7 +87,7 @@ app_license = "MIT"
 # 	],
 # 	"weekly": [
 # 		"one_fm_password_management.tasks.weekly"
-# 	]
+# 	],
 # 	"monthly": [
 # 		"one_fm_password_management.tasks.monthly"
 # 	]
@@ -130,4 +115,3 @@ app_license = "MIT"
 # exempt linked doctypes from being automatically cancelled
 #
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
-

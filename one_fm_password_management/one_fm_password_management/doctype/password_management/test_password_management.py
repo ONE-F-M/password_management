@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2020, ONE FM and Contributors
 # See license.txt
-from __future__ import unicode_literals
 
-# import frappe
-import unittest
+import frappe
+from frappe.tests import IntegrationTestCase
 
-class TestPasswordManagement(unittest.TestCase):
+
+class TestPasswordManagement(IntegrationTestCase):
 	pass

@@ -1,12 +1,15 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2020, ONE FM and contributors
 # For license information, please see license.txt
 
-from __future__ import unicode_literals
-import frappe, re
-from frappe.model.document import Document
+import re
+import secrets
+import string
+
+import frappe
 from frappe import _
+from frappe.model.document import Document
 from frappe.utils.password import get_decrypted_password, set_encrypted_password
+
 
 class PasswordManagement(Document):
 	def validate(self):
@@ -34,7 +37,7 @@ class PasswordManagement(Document):
 		if self.password and self.ensure_strong_password:
 			my_password = self.password
 			if not self.is_new():
-				my_password = get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True)
+				my_password = get_decrypted_password(self.doctype, self.name, "password", raise_exception=True)
 			self.password_strength = get_password_strength(my_password)
 			if self.ensure_strong_password and self.password_strength != "Strong":
 				frappe.throw(_("Password is not good, Include symbols, numbers, lowercase and uppercase letters in the password"))
@@ -44,62 +47,69 @@ class PasswordManagement(Document):
 		return create_new_password()
 
 	@frappe.whitelist()
-	def set_new_password(self, old_password, new_password):
-		if get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True) == old_password:
+	def set_new_password(self, old_password: str, new_password: str):
+		if get_decrypted_password(self.doctype, self.name, "password", raise_exception=True) == old_password:
 			if self.ensure_strong_password and get_password_strength(new_password) != "Strong":
 				frappe.throw(_("Password is not good, Include symbols, numbers, lowercase and uppercase letters in the password"))
-			set_encrypted_password(self.doctype, self.name, new_password, 'password')
+			set_encrypted_password(self.doctype, self.name, new_password, "password")
 			self.reload()
 			return True
 		else:
-			frappe.msgprint(_("Old Password is not valid, please fill correct Old Password to Set New Password.!!"))
-			return False
+			frappe.throw(_("Old Password is not valid, please fill correct Old Password to Set New Password.!!"))
 
 	@frappe.whitelist()
 	def get_my_password(self):
 		if check_user_exist_in_list(self):
-			return get_decrypted_password(self.doctype, self.name, 'password', raise_exception=True)
+			return get_decrypted_password(self.doctype, self.name, "password", raise_exception=True)
 		else:
 			frappe.throw(_("You have no permission to view the password."))
 
+
 @frappe.whitelist()
-def get_password_strength(pwd):
+def get_password_strength(pwd: str):
+	"""Check password strength and return 'Strong', 'Good', or 'Weak'."""
 	# ref: https://www.codespeedy.com/check-the-password-strength-in-python/
-	if(len(pwd)>=8):
+	if len(pwd) >= 8:
 		# must contain one digit similarly we say that for lowercase, uppercase and special characters
-		if(bool(re.match('((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,30})', pwd))==True):
-			return 'Strong'
-		elif(bool(re.match('((\d*)([a-z]*)([A-Z]*)([!@#$%^&*]*).{8,30})', pwd))==True):
-			return 'Good'
+		if bool(re.match(r"((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,30})", pwd)):
+			return "Strong"
+		elif bool(re.match(r"((\d*)([a-z]*)([A-Z]*)([!@#$%^&*]*).{8,30})", pwd)):
+			return "Good"
 	else:
-		return 'Weak'
+		return "Weak"
+
 
 @frappe.whitelist()
-def validate_url(url):
+def validate_url(url: str):
+	"""Validate if a given string is a proper URL."""
 	regex = re.compile(
-        r'^(?:http|ftp)s?://' # http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
-        r'localhost|' #localhost...
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
-        r'(?::\d+)?' # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+		r"^(?:http|ftp)s?://"  # http:// or https://
+		r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
+		r"localhost|"  # localhost...
+		r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
+		r"(?::\d+)?"  # optional port
+		r"(?:/?|[/?]\S+)$",
+		re.IGNORECASE,
+	)
 
-	if(bool(re.match(regex, url))==True):
+	if bool(re.match(regex, url)):
 		return True
 	return False
 
+
 @frappe.whitelist()
 def create_new_password():
-	import random
-	str = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
-	pwd = "".join(random.sample(str, 8))
+	"""Generate a strong random password using cryptographically secure randomness."""
+	charset = string.ascii_letters + string.digits + "!@#$%^&*()?"
+	pwd = "".join(secrets.choice(charset) for _ in range(12))
 	while get_password_strength(pwd) != "Strong":
-		pwd = "".join(random.sample(str, 8))
+		pwd = "".join(secrets.choice(charset) for _ in range(12))
 	return pwd
+
 
 def check_user_exist_in_list(doc):
 	if doc.user_list:
 		for user in doc.user_list:
 			if user.user == frappe.session.user:
 				return True
-	return True if (frappe.session.user in ['Administrator', doc.credentials_owner]) else False
+	return True if (frappe.session.user in ["Administrator", doc.credentials_owner]) else False
